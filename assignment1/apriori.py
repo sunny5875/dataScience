@@ -1,4 +1,5 @@
 import sys
+import itertools
 #python3 apriori.py 3 input.txt output.txt
 
 
@@ -7,6 +8,7 @@ def count_item_set(item_set,transaction_list):
     for t in transaction_list:
         if item_set == set.intersection(item_set, t):
             cnt += 1
+    print(item_set, cnt)
     return cnt
 
 
@@ -18,19 +20,39 @@ def apriori(transaction_list, total, min_sup):
         for i in item:
                 if set([i]) not in c1:
                     c1.append(set([i]))
-    print(c1)
+    print("c1: ", c1)
+
     #scan db and find l1
     l1 = list()
     for item in c1:
         if count_item_set(item, transaction_list)/total >= min_sup:
             l1.append(item)
-    print(l1)
+    print("l1: ", l1)
     #lk가 공집합이 될 때까지 반복
-    # ck = []
-    # lk = []
+    ck = self_joining(l1,2)
+    print("c2: ", ck)
+    pruning_before_testing(ck,2)
+    print("c2: ", ck)
+    lk = []
+    for item in ck:
+        if count_item_set(item, transaction_list)/total >= min_sup:
+            lk.append(item)
+    print("l2: ", lk)
     print("=== end apriori ===")
 
     return l1
+
+def self_joining(l,k):
+    tuplelist = list(itertools.combinations(l,k))
+    result = []
+    for item in tuplelist:
+        result.append(item[0].union(item[1]))
+    
+    return list(set(result))
+        
+
+def pruning_before_testing(list, k):
+    return
 
 def findAssociationRule(list):
     print("=== start associationRule ===")
@@ -59,7 +81,6 @@ if __name__ == "__main__":
     min_sup = int(sys.argv[1])
     min_sup = min_sup/100
 
-    print(min_sup)
 
     input_file_name = sys.argv[2]
     output_file_name = sys.argv[3]
