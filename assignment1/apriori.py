@@ -1,7 +1,9 @@
 import sys
 import itertools
+import time
 #python3 apriori.py 3 input.txt output.txt
 
+# input file을 읽고 리스트에 해당 값을 저장하면서 c1 계산
 def read_input_file_and_get_c1(file_name):
     f = open("./" + input_file_name,'r')
     input_list = f.readlines()
@@ -27,40 +29,41 @@ def read_input_file_and_get_c1(file_name):
 
 
     f.close()
-    
     return transaction_list, total, support_list, c1
 
 
-def self_joining(l,k): #이게 제일 오래걸림
+# lk_1 -> ck구할 때 self joining하는 함수
+def self_joining(l,k):
     result = list()
-    for item in itertools.combinations(l, k):
+    for item in itertools.combinations(l, 2):
         temp = set.union(*item)
-        if len(temp) == k:
+        if len(temp) == k and temp not in result:
             result.append(temp)
     return result
 
-      
+# lk_1 -> ck구할 때 self joining 후 Pruning하는 함수
+def pruning_before_testing(c, p):
+    return  [s for s in c if not any(s.issuperset(t) for t in p)]
+
 # ck와 lk의 차로 pk 구하는 함수: pk는 self joining 후 pruning할 때 pruning하기 위해 저장하는 추가적인 변수
 def difference(c,l):
     return  [s for s in c if s not in l]
 
-def pruning_before_testing(c, p):
-    return  [s for s in c if not any(s.issuperset(t) for t in p)]
-
+# ck -> lk, min sup를 넘는 lk를 구하는 함수
+def createLk(ck, support_list, min_sup):
+    return [item_set for item_set in ck if support_list[frozenset(item_set)] >= min_sup]
 
 def apriori(transaction_list, total, min_sup, support_list, c1):
     #scan db and find l1
-    l1 = list()
-    for item_set in c1:
-        if support_list[frozenset(item_set)] >= min_sup * total:
-                l1.append(item_set)
+    l1 = createLk(c1, support_list, min_sup * total)
     p = difference(c1,l1)
-    lk_1 = l1
-    l = lk_1 
+    lk_1 = l1 # 해당 k번째 frequent pattern 리스트
+    l = lk_1 # total frequent pattern 리스트
     k = 2
     while(True):
         if len(lk_1) == 0:
             break
+        #ck 생성
         ck = self_joining(lk_1,k)
         ck = pruning_before_testing(ck,p)
         #testing 
@@ -76,12 +79,9 @@ def apriori(transaction_list, total, min_sup, support_list, c1):
                     if temp_item not in support_list:
                         support_list[temp_item] = 0
 
-                    
         # find lk
-        lk = []
-        for item_set in ck:
-            if support_list[frozenset(item_set)]>= min_sup * total:
-                lk.append(item_set)
+        lk = createLk(ck, support_list, min_sup * total)
+
         pk = difference(ck,lk)
         p.extend(pk)
         lk_1 = lk
@@ -90,7 +90,7 @@ def apriori(transaction_list, total, min_sup, support_list, c1):
     return l, support_list
 
 
-def findAssociationRule(frequent_list, support_list, total):
+def find_association_rule(frequent_list, support_list, total):
     output = ""
     candidate_list = [s for s in frequent_list if len(s) >= 2]
     for candidate in candidate_list:
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("argv is not correct! please check argv one more time")
         quit()
-        
+    
     min_sup = int(sys.argv[1])
     min_sup = min_sup/100
 
@@ -126,12 +126,9 @@ if __name__ == "__main__":
 
     # find freqeunt pattern
     frequent_pattern_set, support_list = apriori(transaction_list, total, min_sup, support_list, c1)
-    result = findAssociationRule(frequent_pattern_set, support_list, total)
+    result = find_association_rule(frequent_pattern_set, support_list, total)
 
     output_file = open(output_file_name, 'w')
     output_file.write(result)
     output_file.close()
-
-    
-
-    
+ 
