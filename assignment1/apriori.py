@@ -1,9 +1,8 @@
 import sys
 import itertools
-import time
 #python3 apriori.py 3 input.txt output.txt
 
-# input file을 읽고 리스트에 해당 값을 저장하면서 c1 계산
+# input file을 읽고 리스트에 해당 값을 저장. 이 때 dbscan의 수를 줄이기 위해 c1 계산
 def read_input_file_and_get_c1(file_name):
     f = open("./" + input_file_name,'r')
     input_list = f.readlines()
@@ -50,12 +49,13 @@ def difference(c,l):
     return  [s for s in c if s not in l]
 
 # ck -> lk, min sup를 넘는 lk를 구하는 함수
-def createLk(ck, support_list, min_sup):
+def create_lk(ck, support_list, min_sup):
     return [item_set for item_set in ck if support_list[frozenset(item_set)] >= min_sup]
 
+#apriori알고리즘 함수, l1을 구한 후 반복적으로 수행
 def apriori(transaction_list, total, min_sup, support_list, c1):
     #scan db and find l1
-    l1 = createLk(c1, support_list, min_sup * total)
+    l1 = create_lk(c1, support_list, min_sup * total)
     p = difference(c1,l1)
     lk_1 = l1 # 해당 k번째 frequent pattern 리스트
     l = lk_1 # total frequent pattern 리스트
@@ -80,7 +80,7 @@ def apriori(transaction_list, total, min_sup, support_list, c1):
                         support_list[temp_item] = 0
 
         # find lk
-        lk = createLk(ck, support_list, min_sup * total)
+        lk = create_lk(ck, support_list, min_sup * total)
 
         pk = difference(ck,lk)
         p.extend(pk)
@@ -89,7 +89,7 @@ def apriori(transaction_list, total, min_sup, support_list, c1):
         k+= 1
     return l, support_list
 
-
+#association rule을 찾고 output 출력값 생성하는 함수
 def find_association_rule(frequent_list, support_list, total):
     output = ""
     candidate_list = [s for s in frequent_list if len(s) >= 2]
