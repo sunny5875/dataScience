@@ -59,11 +59,11 @@ def apriori(transaction_list, total, min_sup, support_list, c1):
     p = difference(c1,l1)
     lk_1 = l1 # 해당 k번째 frequent pattern 리스트
     l = lk_1 # total frequent pattern 리스트
-    k = 2
+    k = 2 # 변수명 편의를 위해 K-1, k로 두고  k는 2부터 시작함
     while(True):
         if len(lk_1) == 0:
             break
-        #ck 생성
+        #create ck 
         ck = self_joining(lk_1,k)
         ck = pruning_before_testing(ck,p)
         #testing 
@@ -104,7 +104,7 @@ def find_association_rule(frequent_list, support_list, total):
                 item_set_count = support_list[frozenset(item_set)]
                 item_count = support_list[frozenset(candidate)]
                 confidence = (item_count/item_set_count) * 100
-                output += f"{set(item_set)}\t{set(associate_item_set)}\t"+str('%.2f' % round(support, 2))+"\t"+str('%.2f' % round(confidence, 2))+"\n"
+                output += f"{str(set(item_set)).replace(' ', '')}\t{str(set(associate_item_set)).replace(' ', '')}\t"+str('%.2f' % round(support, 2))+"\t"+str('%.2f' % round(confidence, 2))+"\n"
 
     return output.rstrip("\n")
 
