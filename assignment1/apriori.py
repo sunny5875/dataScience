@@ -1,6 +1,6 @@
 import sys
 import itertools
-#python3 apriori.py 3 input.txt output.txt
+#python3 apriori.py 5 input.txt output.txt
 
 # input file을 읽고 리스트에 해당 값을 저장. 이 때 dbscan의 수를 줄이기 위해 c1 계산
 def read_input_file_and_get_c1(file_name):
